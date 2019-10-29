@@ -42,7 +42,7 @@ def connect_kafka_producer():
     finally:
         return _producer
 
-def main():
+def main(sleep_sec=10):
     kafka_producer = connect_kafka_producer()
 
     Socket=socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
@@ -54,8 +54,8 @@ def main():
       total_length = ip_header[2]
       publish_message(kafka_producer, 'new_topic', get_str_bytes_ip(source_ip)+ \
             get_str_bytes_ip(destination_ip), str(total_length))
-      time.sleep(10)
+      time.sleep(sleep_sec)
 
 
 if __name__ == '__main__':
-    main()
+    main(sleep_sec=1)

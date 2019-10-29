@@ -1,9 +1,15 @@
+import argparse
+
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
+from pyspark.sql import functions as F
 
-from DBReader import readDB
+from DBReader import readDB, createDBstream
+
+TOPIC_NAME = "new_topic"
+HOST_PORT = "localhost:9092"
 
 # this module reads data from kafka topic and processes it
 # start using ./bin/spark-submit --jars spark-streaming-kafka-0-8-assembly_2.11-2.4.4.jar --driver-class-path /home/undadasea/postgresql-42.2.8.jar /home/undadasea/StreamChecker/StreamProcessing.py
@@ -22,22 +28,23 @@ def get_str_bytes_ip(ip=None):
 
 
 def main(banned_source_ip=None, banned_destination_ip=None):
-    # TODO: customize topic name
-    topic = "new_topic"
-    brokerAddresses = "localhost:9092"
-    batchTime = 20 # in seconds
+    topic = TOPIC_NAME
+    brokerAddresses = HOST_PORT
+    batchTime = 5 # in seconds
 
     spark = SparkSession.builder.appName("StreamProcessing").getOrCreate()
     sc = spark.sparkContext
     ssc = StreamingContext(sc, batchTime)
     kvs = KafkaUtils.createDirectStream(ssc, [topic], {"metadata.broker.list": brokerAddresses})
 
-    # sql dataframe
-    limits = readDB(spark)
+    # sql dataframe stream
+    limits = createDBstream(spark)
+    # the query writes all new data every time there are updates
+    query = (limits.agg(F.max(limits.effective_date)).collect().writeStream.format("memory").queryName("query").outputMode("update").start())
 
     kvs.pprint()
 
-    banned_source = get_str_bytes_ip(banned_source_ip) #
+    banned_source = get_str_bytes_ip(banned_source_ip)
     filtered_traffic = kvs.filter(lambda x: str(x[0])[:20] != banned_source)
 
     banned_dest = get_str_bytes_ip(banned_destination_ip)
@@ -52,4 +59,9 @@ def main(banned_source_ip=None, banned_destination_ip=None):
     ssc.awaitTermination()
 
 if __name__ == '__main__':
-    main(banned_destination_ip="127.0.0.1")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ban_source", help="to exclude a source ip from counting")
+    parser.add_argument("--ban_destination", help="to exclude a destination ip from counting")
+    args = parser.parse_args()
+
+    main(banned_source_ip=args.ban_source, banned_destination_ip=args.ban_destination)
