@@ -7,3 +7,15 @@ The project consists of 3 major modules: KafkaProducer, StreamProcessing and DBR
 - DBReader simply creates connections to either postgresql database using jdbc driver or json data file which it uses to create a local table later.
 ## Installation
 To run these modules you need to install zookeeper and kafka server. After installing run zookeeper first and then start kafka. KafkaProducer.py is run with the command "python3 KafkaProducer.py" (highly likely you will need to install kafka with "pip install kafka-python"). After this you can run StreamProcessing with "./bin/spark-submit --jars /PATH_TO/spark-streaming-kafka-0-8-assembly_2.11-2.4.4.jar --driver-class-path /PATH_TO/postgresql-42.2.8.jar /PATH_TO/StreamChecker/StreamProcessing.py" from the directory of downloaded spark (my spark package is spark-2.4.4-bin-hadoop2.7). Also, you may need to download dependencies spark-streaming-kafka-0-8-assembly_2.11-2.4.4.jar and postgresql-42.2.8.jar.
+### Requirements satisfaction
+This project can
+- create a schema traffic_limits with columns limit_name, limit_value, effective_date out of json file
+- read to a DataFrame from static table in a database
+- capture traffic
+- aggregate packets to <k,v> pairs
+- manipulate <k,v> pairs stream in order to count traffic only from selected ip addresses
+- since reading the data from traffic_limits table is a stream reading it updates once data in table changes
+- there is an option to update only once per 20 minutes
+This project is still learning how to
+- send messages to kafka only when condition is true
+- run unit-tests
