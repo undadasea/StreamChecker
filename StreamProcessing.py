@@ -27,10 +27,10 @@ def get_str_bytes_ip(ip=None):
         return ""
 
 
-def main(banned_source_ip=None, banned_destination_ip=None):
+def main(source_ip=None, destination_ip=None):
     topic = TOPIC_NAME
     brokerAddresses = HOST_PORT
-    batchTime = 5 # in seconds
+    batchTime = 60*5 # in seconds
 
     spark = SparkSession.builder.appName("StreamProcessing").getOrCreate()
     sc = spark.sparkContext
@@ -44,11 +44,11 @@ def main(banned_source_ip=None, banned_destination_ip=None):
 
     kvs.pprint()
 
-    banned_source = get_str_bytes_ip(banned_source_ip)
-    filtered_traffic = kvs.filter(lambda x: str(x[0])[:20] != banned_source)
+    source = get_str_bytes_ip(source_ip)
+    filtered_traffic = kvs.filter(lambda x: str(x[0])[:20] == source)
 
-    banned_dest = get_str_bytes_ip(banned_destination_ip)
-    filtered_traffic = filtered_traffic.filter(lambda x: str(x[0])[20:] != banned_dest)
+    dest = get_str_bytes_ip(destination_ip)
+    filtered_traffic = filtered_traffic.filter(lambda x: str(x[0])[20:] == dest)
 
     sum_traffic = filtered_traffic.map(lambda x: int(x[1]))
     sum = sum_traffic.reduce(lambda a, b: a+b)
@@ -60,8 +60,8 @@ def main(banned_source_ip=None, banned_destination_ip=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ban_source", help="to exclude a source ip from counting")
-    parser.add_argument("--ban_destination", help="to exclude a destination ip from counting")
+    parser.add_argument("--source", help="to only count traffic from this source address")
+    parser.add_argument("--destination", help="to only count traffic from this dest address")
     args = parser.parse_args()
 
-    main(banned_source_ip=args.ban_source, banned_destination_ip=args.ban_destination)
+    main(source_ip=args.source, destination_ip=args.destination)

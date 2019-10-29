@@ -16,6 +16,7 @@ This project can
 - manipulate <k,v> pairs stream in order to count traffic only from selected ip addresses
 - since reading the data from traffic_limits table is a stream reading it updates once data in table changes
 - there is an option to update only once per 20 minutes
+
 This project is still learning how to
 - send messages to kafka only when condition is true
 - run unit-tests
