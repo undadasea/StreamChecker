@@ -10,11 +10,15 @@ To run these modules you need to install zookeeper and kafka server.
 
 To run zookeeper:
 
-`path/to/kafka/$ bin/zookeeper-server-start.sh config/zookeeper.properties`
+`from/kafka/dir:$ bin/zookeeper-server-start.sh config/zookeeper.properties`
 
 Run Kafka Server:
 
-`path/to/kafka/$ bin/kafka-server-start.sh config/server.properties`
+`from/kafka/dir:$ bin/kafka-server-start.sh config/server.properties`
+
+To create kafka topic:
+
+`from/kafka/dir:$ bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic new_topic`
 
 After installing run zookeeper first and then start kafka. KafkaProducer.py is run with the command
 
@@ -22,7 +26,7 @@ After installing run zookeeper first and then start kafka. KafkaProducer.py is r
 
 (highly likely you will need to install kafka with `pip install kafka-python`). After this you can run StreamProcessing with
 
-`./bin/spark-submit --jars /PATH_TO/spark-streaming-kafka-0-8-assembly_2.11-2.4.4.jar --driver-class-path /PATH_TO/postgresql-42.2.8.jar /PATH_TO/StreamChecker/StreamProcessing.py --source 127.0.0.1`
+`from/spark/dir:$ ./bin/spark-submit --jars /PATH_TO/spark-streaming-kafka-0-8-assembly_2.11-2.4.4.jar --driver-class-path /PATH_TO/postgresql-42.2.8.jar /PATH_TO/StreamChecker/StreamProcessing.py --source 127.0.0.1`
 
 from the directory of downloaded spark (my spark package is spark-2.4.4-bin-hadoop2.7). Also, you may need to download dependencies spark-streaming-kafka-0-8-assembly_2.11-2.4.4.jar and postgresql-42.2.8.jar.
 ### Requirements satisfaction
